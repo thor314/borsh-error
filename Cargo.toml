@@ -1,0 +1,29 @@
+[package]
+name = "borsh_error"
+version = "0.1.0"
+authors = ["Thor <thorck@protonmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk = { git = "https://github.com/near/near-sdk-rs.git", tag="2.2.0" }
+
+
+[dev-dependencies]
+near-sdk-sim = { git = "https://github.com/near/near-sdk-rs.git", tag="2.2.0" }
+
+
+[profile.release]
+codegen-units = 1 # (default) don't parallelize release compilation
+# Tell `rustc` to optimize for small code size.
+opt-level = "z" # optimize for binary size and turn off loop vectorization
+lto = true # reduce binary size
+debug = false # don't include debug info, which slows down compilation
+panic = "abort" # abort on reaching panic, do not continue building
+# Opt into extra safety checks on arithmetic operations https://stackoverflow.com/a/64136471/249801
+overflow-checks = true
