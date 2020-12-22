@@ -2,6 +2,9 @@ This repo contains an example of an error I'm encountering, having to do
 serialization. To reproduce the error, run `./build.sh`. To eliminate the error,
 comment out the function `get_token` in `lib.rs`.
 
+Or, switch to the branch called `ugly-serde-solution`, to see an awful solution
+to the problem.
+
 The error appears to occur on any instance of attempting to access data stored
 within an UnorderedMap data structure.
 
