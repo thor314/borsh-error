@@ -1,3 +1,7 @@
+This branch of the repo contains a (very bad) solution: instead of using borsh,
+just don't do that! Use Serde instead. All helper structs may no longer use
+Near's custom, borsh-compatible datatypes.
+
 This repo contains an example of an error I'm encountering, having to do
 serialization. To reproduce the error, run `./build.sh`. To eliminate the error,
 comment out the function `get_token` in `lib.rs`.

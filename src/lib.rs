@@ -53,6 +53,7 @@ impl Marketplace {
             .unwrap_or_else(|| env::panic(b"could not find that token"))
             .get_offer_at_index(index)
     }
+
     // the trait `Serialize` is not implemented for `Royalty`
     pub fn get_royalties(&self, unique_id: &UniqueId) -> Option<Royalty> {
         self.get_token(unique_id).royalties
@@ -63,13 +64,19 @@ impl Marketplace {
         self.my_vector.get(index)
     }
 }
-#[derive(BorshSerialize, BorshDeserialize)] // dependency: insert into UMap
+
+// Add Serialize, Deserialize because we can't tell the wasm
+// compiler to use Borsh
+//
+// Convert the Vector in offer_history to a Vec, because we can't use Borsh
+#[derive(BorshSerialize, BorshDeserialize, Deserialize, Serialize)]
+#[serde(crate = "near_sdk::serde")]
 pub struct Token {
     pub(crate) owner_id: AccountId,
     pub(crate) store_id: StoreId,
     pub(crate) token_id: TokenId,
     pub(crate) royalties: Option<Royalty>,
-    offer_history: Vector<Offer>,
+    offer_history: Vec<Offer>, // this has to become a Vec
 }
 impl Token {
     pub(crate) fn new(
@@ -84,26 +91,32 @@ impl Token {
             store_id,
             token_id,
             royalties,
-            offer_history: Vector::new(b"t".to_vec()),
+            offer_history: vec![],
         }
     }
     pub(crate) fn get_offer_at_index(&self, i: u64) -> Option<Offer> {
-        self.offer_history.get(i)
+        self.offer_history.get(i as usize).map(|o| *o)
     }
 }
-#[derive(BorshSerialize, BorshDeserialize)]
+
+// Add Serialize, Deserialize because we can't tell the wasm
+// compiler to use Borsh
+//
+// Convert the UnorderedMap in Royalty to a Hashmap, because we can't use Borsh
+#[derive(BorshSerialize, BorshDeserialize, Deserialize, Serialize)]
+#[serde(crate = "near_sdk::serde")]
 pub struct Royalty {
     percentage: Percentage,
-    split_between: UnorderedMap<AccountId, Percentage>,
+    split_between: HashMap<AccountId, Percentage>,
 }
 impl Royalty {
     pub(crate) fn new(
         percentage: Percentage,
         split_between: HashMap<AccountId, Percentage>,
     ) -> Self {
-        let mut umap: UnorderedMap<AccountId, Percentage> = UnorderedMap::new(b"uf".to_vec());
+        let mut umap: HashMap<AccountId, Percentage> = HashMap::new();
         split_between.iter().for_each(|(acctid, p)| {
-            umap.insert(&acctid.to_string(), &p);
+            umap.insert(acctid.to_string(), *p);
         });
         Self {
             percentage,
@@ -111,7 +124,13 @@ impl Royalty {
         }
     }
 }
-#[derive(BorshSerialize, BorshDeserialize)]
+
+// add Clone, Copy so we can pass around references to Offers
+//
+// add Serialize, Deserialize because we can't tell the wasm
+// compiler to use Borsh
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone, Copy)]
+#[serde(crate = "near_sdk::serde")]
 pub struct Offer {
     price: Balance,
 }
